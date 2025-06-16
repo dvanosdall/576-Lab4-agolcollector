@@ -30,11 +30,18 @@
             require([
                 "esri/config",
                 "esri/Map",
-                "esri/views/MapView"],
+                "esri/views/MapView",
+                "esri/widgets/Locate",
+                "esri/widgets/Search",
+                "esri/layers/FeatureLayer"
+            ],
                 (
                     esriConfig,
                     Map,
-                    MapView
+                    MapView,
+                    Locate,
+                    Search,
+                    FeatureLayer
                 ) => {
                     esriConfig.apiKey = "AAPTxy8BH1VEsoebNVZXo8HurA7KuWFcKWHkeJGoN8LUQ0kg89t8Mp9cvPVKOEIlsdPNLfXn5b7CCVz-TOsYcUlMoSeMzi8wk5dok7tlJEH1AT1D08Fi4R08Yc-PqHpmdRfewyDZ3eKIjCxRy2ypQ7t_XLIUEo5TrWCxuzoL-CiULHI9PILuzJZ9AY1270cOvy30f3K9Jl_RnHOWwK1AQpkEKmKK3fbIhSplvXWfswyP60ZOP7jizaZoFHiwlIPf7-kQAT1_oy0SXwjE";
 
@@ -44,12 +51,44 @@
 
                     const view = new MapView({
                         container: "viewDiv", // Reference to the DOM node that will contain the view
-                        map: map // References the map object
+                        map: map, // References the map object
+                        center: [-96.1064722222, 41.1518055556], // werner park in omaha area
+                        zoom: 17
                     });
 
+                    // Locate widget (goes on top-left at index 0)
+                    const locateWidget = new Locate({
+                        view: view,
+                        useHeadingEnabled: false,
+                        goToOverride: (view, options) => {
+                            options.target.scale = 1500;
+                            return view.goTo(options.target);
+                        }
+                    });
+                    view.ui.add(locateWidget, {
+                        position: "top-left",
+                        index: 0  // This appears before the zoom (higher up)
+                    });
+
+                    // Search widget (goes below locate widget)
+                    const searchWidget = new Search({
+                        view: view,
+                        popupEnabled: true,
+                        placeholder: "Search address or place"
+                    });
+                    view.ui.add(searchWidget, {
+                        position: "top-left",
+                        index: 0  // This appears at top
+                    });
+
+                    // Create featurelayer from feature service
+                    const layer = new FeatureLayer({
+                        // URL to the service
+                        url: "https://services.arcgis.com/HRPe58bUyBqyyiCt/arcgis/rest/services/survey123_d3a337f7a5fd4c8cb9dc00dddceb1ce9_results/FeatureServer/0" //Your item URL Goes Here
+                    });
+
+                    map.add(layer);
                 });
-
-
         });
     </script>
 </head>
